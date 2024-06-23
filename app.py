@@ -2,14 +2,15 @@ from flask import Flask, request, jsonify, render_template
 from PIL import Image
 import io
 import torch
-from torchvision import transforms
-from model import SimpleCNN
+from torchvision import transforms, models
 
 app = Flask(__name__)
 
 # 저장된 모델 로드
-model = SimpleCNN(num_classes=15)  # 클래스 수를 맞춰 설정
-model.load_state_dict(torch.load('model.pth', map_location=torch.device('cpu')))
+model = models.resnet18()
+num_ftrs = model.fc.in_features
+model.fc = torch.nn.Linear(num_ftrs, 15)  # 클래스 수를 맞춰 설정
+model.load_state_dict(torch.load('final_model.pth', map_location=torch.device('cpu')))
 model.eval()
 
 # 라벨 매핑 딕셔너리
@@ -33,10 +34,10 @@ label_map = {
 
 # 이미지 전처리 함수
 def transform_image(image_bytes):
-    my_transforms = transforms.Compose([transforms.Grayscale(num_output_channels=1),
+    my_transforms = transforms.Compose([transforms.Grayscale(num_output_channels=3),
                                         transforms.Resize((224, 224)),
                                         transforms.ToTensor(),
-                                        transforms.Normalize((0.5,), (0.5,))])
+                                        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
     image = Image.open(io.BytesIO(image_bytes))
     return my_transforms(image).unsqueeze(0)
 
