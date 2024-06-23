@@ -25,6 +25,10 @@ button {
     font-size: 16px;
 }
 
+#image-preview {
+    margin-top: 20px;
+}
+
 #result {
     margin-top: 20px;
     font-size: 20px;

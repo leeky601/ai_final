@@ -9,14 +9,34 @@
 <body>
     <div class="container">
         <h1>Human Action Recognition</h1>
-        <form action="/predict" method="post" enctype="multipart/form-data">
-            <input type="file" name="file" required>
+        <form id="upload-form" action="/predict" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" id="file-input" required>
             <button type="submit">Predict</button>
         </form>
+        <div id="image-preview"></div>
         <div id="result"></div>
     </div>
     <script>
-        document.querySelector('form').addEventListener('submit', async function(event) {
+        // 업로드된 이미지 미리보기
+        document.getElementById('file-input').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgElement = document.createElement('img');
+                    imgElement.src = e.target.result;
+                    imgElement.style.maxWidth = '300px';
+                    imgElement.style.marginTop = '20px';
+                    const preview = document.getElementById('image-preview');
+                    preview.innerHTML = '';
+                    preview.appendChild(imgElement);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 폼 제출 시 예측 결과를 표시
+        document.getElementById('upload-form').addEventListener('submit', async function(event) {
             event.preventDefault();
             const formData = new FormData(event.target);
             const response = await fetch('/predict', {
